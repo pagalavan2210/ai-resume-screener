@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-import fitz  # PyMuPDF
+import fitz
 import spacy
 import re
 import os
@@ -16,6 +16,32 @@ SKILL_KEYWORDS = [
     "git", "linux", "docker", "rest api", "mongodb", "mysql"
 ]
 
+SKILL_RESOURCES = {
+    "python": "https://www.coursera.org/learn/python",
+    "java": "https://www.coursera.org/learn/java-programming",
+    "sql": "https://www.coursera.org/learn/sql-for-data-science",
+    "machine learning": "https://www.coursera.org/learn/machine-learning",
+    "deep learning": "https://www.coursera.org/specializations/deep-learning",
+    "nlp": "https://www.coursera.org/specializations/natural-language-processing",
+    "flask": "https://www.youtube.com/watch?v=Z1RJmh_OqeA",
+    "django": "https://www.coursera.org/learn/django-web-framework",
+    "react": "https://www.coursera.org/learn/react-basics",
+    "javascript": "https://www.coursera.org/learn/javascript-basics",
+    "html": "https://www.coursera.org/learn/html-css-javascript-for-web-developers",
+    "css": "https://www.coursera.org/learn/html-css-javascript-for-web-developers",
+    "data analysis": "https://www.coursera.org/learn/data-analysis-with-python",
+    "pandas": "https://www.youtube.com/watch?v=vmEHCJofslg",
+    "numpy": "https://www.youtube.com/watch?v=QUT1VHiLmmI",
+    "tensorflow": "https://www.coursera.org/learn/introduction-tensorflow",
+    "keras": "https://www.youtube.com/watch?v=qFJeN9V1ZsI",
+    "git": "https://www.coursera.org/learn/introduction-git-github",
+    "linux": "https://www.coursera.org/learn/linux-fundamentals",
+    "docker": "https://www.coursera.org/learn/docker-for-the-absolute-beginner",
+    "rest api": "https://www.youtube.com/watch?v=qbLc5a9jdXo",
+    "mongodb": "https://learn.mongodb.com",
+    "mysql": "https://www.coursera.org/learn/mysql"
+}
+
 def extract_text_from_pdf(filepath):
     text = ""
     with fitz.open(filepath) as doc:
@@ -29,7 +55,6 @@ def extract_text_from_txt(filepath):
 
 def score_resume(resume_text, job_desc):
     job_desc = job_desc.lower()
-    job_keywords = set(re.findall(r'\b\w[\w\s]*\b', job_desc))
 
     matched = []
     missing = []
@@ -47,10 +72,17 @@ def score_resume(resume_text, job_desc):
     emails = [token.text for token in doc if "@" in token.text]
     phones = re.findall(r'\b\d{10}\b|\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b', resume_text)
 
+    recommendations = {
+        skill: SKILL_RESOURCES[skill]
+        for skill in missing
+        if skill in SKILL_RESOURCES
+    }
+
     return {
         "score": score,
         "matched": matched,
         "missing": missing,
+        "recommendations": recommendations,
         "email": emails[0] if emails else "Not found",
         "phone": phones[0] if phones else "Not found",
         "word_count": len(resume_text.split())

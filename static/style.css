@@ -96,3 +96,64 @@ button:hover { background: #3451d1; }
     font-size: 15px;
 }
 .back-btn:hover { background: #3451d1; }
+.gauge-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.gauge-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -40px;
+}
+
+.gauge-score {
+    font-size: 42px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.gauge-text {
+    font-size: 15px;
+    color: #666;
+}
+
+.recommendations {
+    list-style: none;
+    padding: 0;
+}
+
+.recommendations li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.recommendations li:last-child {
+    border-bottom: none;
+}
+
+.rec-skill {
+    font-weight: 500;
+    color: #333;
+    text-transform: capitalize;
+}
+
+.rec-link {
+    background: #4361ee;
+    color: white;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.rec-link:hover {
+    background: #3451d1;
+}
