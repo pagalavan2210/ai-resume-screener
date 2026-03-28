@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Results - Resume Screener</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h1>Screening Results</h1>
+    <p class="subtitle">{{ filename }}</p>
+
+    <div class="score-box {% if result.score >= 70 %}high{% elif result.score >= 40 %}medium{% else %}low{% endif %}">
+        <div class="score-number">{{ result.score }}%</div>
+        <div class="score-label">Match Score</div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-card">
+            <h3>Contact Info</h3>
+            <p>Email: {{ result.email }}</p>
+            <p>Phone: {{ result.phone }}</p>
+            <p>Word count: {{ result.word_count }}</p>
+        </div>
+
+        <div class="info-card">
+            <h3>Matched Skills ({{ result.matched|length }})</h3>
+            <div class="tags">
+                {% for skill in result.matched %}
+                <span class="tag matched">{{ skill }}</span>
+                {% endfor %}
+                {% if not result.matched %}<p>No skills matched</p>{% endif %}
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3>Missing Skills ({{ result.missing|length }})</h3>
+            <div class="tags">
+                {% for skill in result.missing %}
+                <span class="tag missing">{{ skill }}</span>
+                {% endfor %}
+                {% if not result.missing %}<p>All required skills found!</p>{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <a href="/" class="back-btn">Screen Another Resume</a>
+</div>
+</body>
+</html>
