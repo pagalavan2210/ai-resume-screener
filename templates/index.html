@@ -1,31 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <title>Resume Screener</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Screener</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<div class="container">
-    <h1>AI Resume Screener</h1>
-    <p class="subtitle">Upload a resume and paste a job description to get a match score</p>
 
+<nav class="navbar">
+    <div class="nav-brand">ResumeAI</div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+        <span id="theme-icon">🌙</span>
+    </button>
+</nav>
+
+<div class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">AI Powered</div>
+        <h1>Screen Resumes Instantly</h1>
+        <p>Upload a resume and paste a job description to get an instant match score, skill analysis, and course recommendations.</p>
+        <div class="hero-stats">
+            <div class="stat"><span>NLP</span><small>Powered</small></div>
+            <div class="stat"><span>spaCy</span><small>Engine</small></div>
+            <div class="stat"><span>100%</span><small>Free</small></div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
     {% if error %}
     <div class="error">{{ error }}</div>
     {% endif %}
 
-    <form action="/analyze" method="POST" enctype="multipart/form-data">
-        <div class="form-group">
-            <label>Upload Resume (PDF or TXT)</label>
-            <input type="file" name="resume" accept=".pdf,.txt" required>
+    <form action="/analyze" method="POST" enctype="multipart/form-data" onsubmit="showSpinner()">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Upload Resume</label>
+                <div class="file-drop" id="fileDrop">
+                    <div class="file-icon">📄</div>
+                    <p>Drop your PDF or TXT here</p>
+                    <small>or click to browse</small>
+                    <input type="file" name="resume" accept=".pdf,.txt" required id="fileInput">
+                </div>
+                <div class="file-name" id="fileName"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Job Description</label>
+                <textarea name="job_desc" rows="10"
+                    placeholder="Paste the full job description here..." required></textarea>
+            </div>
         </div>
-        <div class="form-group">
-            <label>Paste Job Description</label>
-            <textarea name="job_desc" rows="8" placeholder="Paste the full job description here..." required></textarea>
-        </div>
-        <button type="submit">Analyze Resume</button>
+
+        <button type="submit" class="submit-btn">
+            <span id="btn-text">Analyze Resume</span>
+        </button>
     </form>
 </div>
+
+<!-- Spinner overlay -->
+<div class="spinner-overlay" id="spinnerOverlay">
+    <div class="spinner-box">
+        <div class="spinner"></div>
+        <p>Analyzing your resume...</p>
+        <small>This may take a few seconds</small>
+    </div>
+</div>
+
 <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

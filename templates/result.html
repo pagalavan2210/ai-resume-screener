@@ -1,15 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Results - Resume Screener</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+
+<nav class="navbar">
+    <div class="nav-brand">ResumeAI</div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+        <span id="theme-icon">🌙</span>
+    </button>
+</nav>
+
 <div class="container">
-    <h1>Screening Results</h1>
-    <p class="subtitle">{{ filename }}</p>
+    <div class="results-header">
+        <h1>Screening Results</h1>
+        <p class="subtitle">{{ filename }}</p>
+    </div>
 
     <!-- Gauge Chart -->
     <div class="gauge-wrapper">
@@ -20,7 +31,47 @@
         </div>
     </div>
 
+    <!-- Progress Bars -->
+    <div class="progress-section">
+        <h3>Skill Breakdown</h3>
+        <div class="progress-item">
+            <div class="progress-label">
+                <span>Matched Skills</span>
+                <span>{{ result.matched|length }}</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill matched-fill" style="width:0%"
+                     data-width="{{ (result.matched|length / (result.matched|length + result.missing|length) * 100)|round }}%">
+                </div>
+            </div>
+        </div>
+        <div class="progress-item">
+            <div class="progress-label">
+                <span>Missing Skills</span>
+                <span>{{ result.missing|length }}</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill missing-fill" style="width:0%"
+                     data-width="{{ (result.missing|length / (result.matched|length + result.missing|length) * 100)|round }}%">
+                </div>
+            </div>
+        </div>
+        <div class="progress-item">
+            <div class="progress-label">
+                <span>Overall Match</span>
+                <span>{{ result.score }}%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill overall-fill" style="width:0%"
+                     data-width="{{ result.score }}%">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="info-grid">
+
+        <!-- Contact Info -->
         <div class="info-card">
             <h3>Contact Info</h3>
             <p>Email: {{ result.email }}</p>
@@ -28,40 +79,86 @@
             <p>Word count: {{ result.word_count }}</p>
         </div>
 
+        <!-- Matched Skills -->
         <div class="info-card">
             <h3>Matched Skills ({{ result.matched|length }})</h3>
             <div class="tags">
                 {% for skill in result.matched %}
                 <span class="tag matched">{{ skill }}</span>
                 {% endfor %}
-                {% if not result.matched %}<p>No skills matched</p>{% endif %}
+                {% if not result.matched %}
+                <p>No skills matched</p>
+                {% endif %}
             </div>
         </div>
 
+        <!-- Missing Skills -->
         <div class="info-card">
             <h3>Missing Skills ({{ result.missing|length }})</h3>
             <div class="tags">
                 {% for skill in result.missing %}
                 <span class="tag missing">{{ skill }}</span>
                 {% endfor %}
-                {% if not result.missing %}<p>All required skills found!</p>{% endif %}
+                {% if not result.missing %}
+                <p>All required skills found!</p>
+                {% endif %}
             </div>
         </div>
 
-        <!-- Recommendations Card -->
+        <!-- Recommended Courses -->
         {% if result.recommendations %}
         <div class="info-card">
-            <h3>Recommended Courses</h3>
-            <ul class="recommendations">
-                {% for skill, link in result.recommendations.items() %}
-                <li>
-                    <span class="rec-skill">{{ skill }}</span>
-                    <a href="{{ link }}" target="_blank" class="rec-link">Learn now</a>
+            <h3>Recommended Courses for Missing Skills</h3>
+            {% for skill, courses in result.recommendations.items() %}
+            <div class="skill-course-block">
+                <div class="skill-course-title">{{ skill | capitalize }}</div>
+                <div class="course-cards">
+                    {% for course in courses %}
+                    <a href="{{ course.link }}" target="_blank" class="course-card">
+                        <div class="course-platform">{{ course.platform }}</div>
+                        <div class="course-name">{{ course.course }}</div>
+                        <div class="course-meta">
+                            <span class="course-duration">{{ course.duration }}</span>
+                            <span class="course-level level-{{ course.level | lower }}">{{ course.level }}</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- ATS Tips -->
+        <div class="info-card">
+            <h3>ATS Optimization Tips</h3>
+            <ul class="tips-list">
+                {% for tip in result.tips %}
+                <li class="tip-item">
+                    <span class="tip-icon">✓</span>
+                    <span>{{ tip }}</span>
                 </li>
                 {% endfor %}
             </ul>
         </div>
-        {% endif %}
+
+        <!-- Job Opportunities -->
+        <div class="info-card">
+            <h3>Job Opportunities for You</h3>
+            <div class="jobs-grid">
+                {% for job in result.jobs %}
+                <a href="{{ job.link }}" target="_blank" class="job-card">
+                    <div class="job-title">{{ job.title }}</div>
+                    <div class="job-company">{{ job.company }}</div>
+                    <div class="job-apply">Apply Now</div>
+                </a>
+                {% endfor %}
+                {% if not result.jobs %}
+                <p style="color: var(--text-secondary)">No job matches found. Add more skills to your resume.</p>
+                {% endif %}
+            </div>
+        </div>
+
     </div>
 
     <a href="/" class="back-btn">Screen Another Resume</a>
@@ -70,13 +167,12 @@
 <script>
 const score = {{ result.score }};
 const color = score >= 70 ? '#2d6a4f' : score >= 40 ? '#b5830a' : '#c1121f';
-const remaining = 100 - score;
 
 new Chart(document.getElementById('gaugeChart'), {
     type: 'doughnut',
     data: {
         datasets: [{
-            data: [score, remaining],
+            data: [score, 100 - score],
             backgroundColor: [color, '#e9ecef'],
             borderWidth: 0,
             circumference: 180,
@@ -90,6 +186,17 @@ new Chart(document.getElementById('gaugeChart'), {
         animation: { animateRotate: true, duration: 1200 }
     }
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        document.querySelectorAll('.progress-fill').forEach(bar => {
+            bar.style.transition = 'width 1s ease';
+            bar.style.width = bar.dataset.width;
+        });
+    }, 300);
+});
 </script>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
